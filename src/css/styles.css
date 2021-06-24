@@ -55,7 +55,14 @@ button {
   width: 4rem;
 }
 
-.pics .content img {
+/* .pics .content img {
   width: 60%;
   padding: 1rem;
+} */
+
+.pictures img {
+  max-width: 50%;
+}
+.pictures h1 {
+  color: rgb(25, 152, 25);
 }
