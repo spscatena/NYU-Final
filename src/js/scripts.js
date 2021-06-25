@@ -35,7 +35,6 @@ function showData(stories) {
     <div class="item">
       <h3>${story.title}</h3>
       <p>${story.abstract}</p>
-      <p>${caption ? caption : "no caption"}</p>
     </div>
   `
     )
