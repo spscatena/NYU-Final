@@ -1,7 +1,7 @@
 document.addEventListener("click", clickHandlers);
 
 // store the link plus the API key in a variable
-const key = "uQG4jhIEHKHKm0qMKGcTHqUgAolr1GM0";
+const key = "eSmE1FWORSpaCimjXmDe5cGALcFUVDdn";
 const API = `https://api.nytimes.com/svc/topstories/v2/nyregion.json?api-key=${key}`;
 
 console.log(API);
@@ -13,27 +13,15 @@ function clickHandlers(event) {
     .then((data) => showData(data.results));
 }
 
-// function showData(stories) {
-//   console.log(stories[0].title);
-//   var looped = "";
-//   for (let story of stories) {
-//     looped += `
-//     <div class="item">
-//       <h3>${story.title}</h3>
-//       <p>${story.abstract}</p>
-//     </div>
-//     `;
-//     console.log(looped);
-//   }
-//   document.querySelector(".stories").innerHTML = looped;
-// }
-
 function showData(stories) {
   var looped = stories
     .map(
       (story) => `
     <div class="item">
-      <h3>${story.title}</h3>
+    <img src=${story.multimedia[0].url}>
+    <h6>${story.multimedia[0].caption}</h6>
+    <h5>${story.byline}</h5>
+    <h3><a href=${story.url} target="_blank">${story.title}</a></h3>
       <p>${story.abstract}</p>
     </div>
   `
@@ -41,11 +29,38 @@ function showData(stories) {
     .join("");
 
   document.querySelector(".stories").innerHTML = looped;
+  console.log(stories);
 }
 
-/*
-Add:
-1. author
-2. an image
-3. caption
-*/
+const form = document.getElementById("search-form");
+if (form) {
+  form.addEventListener("submit", submitHandler);
+}
+
+function submitHandler(event) {
+  event.preventDefault();
+  const searchQuery = document.getElementById("search-text").value;
+  console.log(searchQuery);
+  const searchAPI = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${searchQuery}&api-key=eSmE1FWORSpaCimjXmDe5cGALcFUVDdn`;
+  fetch(searchAPI)
+    .then((response) => response.json())
+    .then((data) => getSearchResults(data));
+}
+
+function getSearchResults(data) {
+  console.log(data);
+  var parsedREsults = data.response.docs
+    .map((doc) => {
+      const pubDate = new Date(Date.parse(doc.pub_date));
+      return `
+        <div class="item">
+        <h2><a href=${doc.web_url} target="_blank">${doc.headline.main}</a></h2>
+        <h4>${pubDate.toLocaleDateString()}</h4>
+        <p>${doc.abstract}</p>
+        </div>
+      `;
+    })
+    .join("");
+
+  document.querySelector(".search-results").innerHTML = parsedREsults;
+}

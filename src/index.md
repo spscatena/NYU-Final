@@ -1,10 +1,10 @@
 ---
 layout: layout.html
-pageTitle: New York Today
+pageTitle: New York Times
 ---
 
-## Articles
-
-<div class="stories">Loading...</div>
+## Today's Top Stories
 
 <button>Show Stories</button>
+
+<div class="stories"></div>
