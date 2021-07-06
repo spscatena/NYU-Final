@@ -1,10 +1,11 @@
-document.addEventListener("click", getWeather);
+document.addEventListener("click", getLocation);
 
-function getWeather(event) {
-  if (!event.target.matches("button")) return;
-  console.log("button clicked");
+function getWeather(longitude, latitude) {
+  const datePicker = document.getElementById("date-picker").value;
+  console.log(datePicker);
+
   fetch(
-    "https://dark-sky.p.rapidapi.com/40.730610,-74.0060,2021-07-01T02:00:00Z",
+    `https://dark-sky.p.rapidapi.com/${latitude},${longitude},${datePicker}T00:00:00Z`,
     {
       method: "GET",
       headers: {
@@ -15,80 +16,64 @@ function getWeather(event) {
   )
     .then((response) => response.json())
     .then((data) => displayWeather(data));
-  // .then((data) => console.log(data));
 }
 
+// prettier-ignore
 function displayWeather(weather) {
-  console.log(weather);
   const html = `
       <div class="item">
       <p>${weather.hourly.summary}</p>
+      <p>High Temp: ${weather.daily.data[0].temperatureHigh}</p>
+      <p>Low Temp: ${weather.daily.data[0].temperatureLow}</p>
       </div>
-
     `;
 
   document.querySelector(".stories").innerHTML = html;
-  document.querySelector(
-    "#weather-message"
-  ).innerHTML = `${weather.hourly.summary}`;
+  console.log(weather);
+  let hourlySummary = weather.hourly.icon;
+  if (hourlySummary === "rain") {
+    document.querySelector("#hourly-result").innerHTML = "Beach Bummer, It's going to rain!"
+    document.querySelector("body").style.backgroundImage = 'url("https://media.giphy.com/media/t7Qb8655Z1VfBGr5XB/giphy-downsized.gif")';
+  }
+  if (hourlySummary !== "rain" && weather.daily.data[0].temperatureHigh > 70) {
+    document.querySelector("#hourly-result").innerHTML = "Beach Betty, No rain in the forecast!"
+    document.querySelector("body").style.backgroundImage = 'url("https://media.giphy.com/media/KV1s4kSJHaY3m/source.gif")';
+
+  }
+  if (hourlySummary !== "rain" && weather.daily.data[0].temperatureHigh < 70) {
+    document.querySelector("#hourly-result").innerHTML = "Beach Bummer, It might be too chilly!"
+  }
+
+
 }
 
-// function determinBeachDay() {
+function getLocation(event) {
+  if (!event.target.matches("button")) return;
+  event.preventDefault();
+  const zipQuery = document.getElementById("user-input").value;
+  console.log(zipQuery);
+  fetch(
+    `https://vanitysoft-boundaries-io-v1.p.rapidapi.com/rest/v1/public/boundary/zipcode?zipcode=${zipQuery}`,
+    {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": "51dca4278fmsh6c701f259ac22d4p1274dajsn501e7e39e747",
+        "x-rapidapi-host": "vanitysoft-boundaries-io-v1.p.rapidapi.com",
+      },
+    }
+  )
+    .then((response) => response.json())
+    .then((data) => getCoordinates(data));
+}
 
-//   for (let i = 0; i < something.lenth; i++){
+function getCoordinates(zip) {
+  console.log(zip);
+  const longitude = zip.features[0].geometry.coordinates[0][0][0];
+  const latitude = zip.features[0].geometry.coordinates[0][0][1];
+  const city = zip.features[0].properties.city;
+  const state = zip.features[0].properties.state;
+  const displayCityState = `<h2>${city}, ${state}</h2>`;
+  document.querySelector("#location").innerHTML = displayCityState;
 
-//   }
-
-// }
-
-// function showData(stories) {
-//   var looped = stories
-//     .map(
-//       (story) => `
-//     <div class="item">
-//     <img src=${story.multimedia[0].url}>
-//     <h6>${story.multimedia[0].caption}</h6>
-//     <h5>${story.byline}</h5>
-//     <h3><a href=${story.url} target="_blank">${story.title}</a></h3>
-//       <p>${story.abstract}</p>
-//     </div>
-//   `
-//     )
-//     .join("");
-
-//   document.querySelector(".stories").innerHTML = looped;
-//   console.log(stories);
-// }
-
-// const form = document.getElementById("search-form");
-// if (form) {
-//   form.addEventListener("submit", submitHandler);
-// }
-
-// function submitHandler(event) {
-//   event.preventDefault();
-//   const searchQuery = document.getElementById("search-text").value;
-//   console.log(searchQuery);
-//   const searchAPI = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${searchQuery}&api-key=eSmE1FWORSpaCimjXmDe5cGALcFUVDdn`;
-//   fetch(searchAPI)
-//     .then((response) => response.json())
-//     .then((data) => getSearchResults(data));
-// }
-
-// function getSearchResults(data) {
-//   console.log(data);
-//   var parsedREsults = data.response.docs
-//     .map((doc) => {
-//       const pubDate = new Date(Date.parse(doc.pub_date));
-//       return `
-//         <div class="item">
-//         <h2><a href=${doc.web_url} target="_blank">${doc.headline.main}</a></h2>
-//         <h4>${pubDate.toLocaleDateString()}</h4>
-//         <p>${doc.abstract}</p>
-//         </div>
-//       `;
-//     })
-//     .join("");
-
-//   document.querySelector(".search-results").innerHTML = parsedREsults;
-//   }
+  getWeather(longitude, latitude);
+}
